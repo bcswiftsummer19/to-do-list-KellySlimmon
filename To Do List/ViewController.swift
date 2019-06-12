@@ -9,10 +9,10 @@
 import UIKit
 
 class ViewController: UIViewController {
-    var toDoArray = ["Learn swift", "Build apps", "Change world"]
-    var toDoNotesArray = ["I should be certain to do othe practice exericeses at the ends of every section.", "Come up with the coolest and greatest idea for an app and hopefully win a prize for it.", "Become famous and use my superior knowledge to do good for the world."]
-//    var toDoArray = [String]()
-//    var toDoNotesArray = [String]()
+//    var toDoArray = ["Learn swift", "Build apps", "Change world"]
+//    var toDoNotesArray = ["I should be certain to do othe practice exericeses at the ends of every section.", "Come up with the coolest and greatest idea for an app and hopefully win a prize for it.", "Become famous and use my superior knowledge to do good for the world."]
+    var toDoArray = [String]()
+    var toDoNotesArray = [String]()
     let defaultsData = UserDefaults.standard
 
     @IBOutlet weak var tableView: UITableView!
@@ -24,14 +24,15 @@ class ViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         
-        toDoArray = defaultsData.stringArray(forKey: "ToDoArray") ?? [String]()
-        toDoNotesArray = defaultsData.stringArray(forKey: "ToDoNotesArray") ?? [String]()
+        toDoArray = defaultsData.stringArray(forKey: "toDoArray") ?? [String]()
+        toDoNotesArray = defaultsData.stringArray(forKey: "toDoNotesArray") ?? [String]()
     }
     
     func saveDefaultsData () {
         defaultsData.set(toDoArray, forKey: "toDoArray")
         defaultsData.set(toDoNotesArray, forKey: "toDoNotesArray")
     }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "EditItem" {
             let destination = segue.destination as! DetailedViewController
@@ -52,8 +53,8 @@ class ViewController: UIViewController {
             tableView.reloadRows(at: [indexPath], with: .automatic)
         } else {
             let newIndexPath = IndexPath(row: toDoArray.count, section: 0)
-                toDoNotesArray.append(sourceViewController.toDoNoteItem!)
-            toDoArray.append(sourceViewController.toDoItem)
+            toDoArray.append(sourceViewController.toDoItem!)
+            toDoNotesArray.append(sourceViewController.toDoNoteItem!)
             tableView.insertRows(at: [newIndexPath], with: .automatic)
         }
         saveDefaultsData()
@@ -66,6 +67,7 @@ class ViewController: UIViewController {
             editBarButton.title = "Edit"
         } else {
             tableView.setEditing(true, animated: true)
+            addBarButton.isEnabled = false
             editBarButton.title = "Done"
             
         }
@@ -80,7 +82,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         cell.textLabel?.text = toDoArray[indexPath.row]
         cell.detailTextLabel?.text = toDoNotesArray[indexPath.row]
         return cell 
@@ -99,6 +101,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         let noteToMove = toDoNotesArray[sourceIndexPath.row]
         toDoArray.insert(itemToMove, at: destinationIndexPath.row )
         toDoNotesArray.insert(noteToMove, at: destinationIndexPath.row)
+        saveDefaultsData()
     }
 }
 

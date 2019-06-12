@@ -10,19 +10,34 @@ import UIKit
 
 class ViewController: UIViewController {
     var toDoArray = ["Learn swift", "Build apps", "Change world"]
+    var toDoNotesArray = ["I should be certain to do othe practice exericeses at the ends of every section.", "Come up with the coolest and greatest idea for an app and hopefully win a prize for it.", "Become famous and use my superior knowledge to do good for the world."]
+//    var toDoArray = [String]()
+//    var toDoNotesArray = [String]()
+    let defaultsData = UserDefaults.standard
+
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var editBarButton: UIBarButtonItem!
     @IBOutlet weak var addBarButton: UIBarButtonItem!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.delegate = self
         tableView.dataSource = self
+        
+        toDoArray = defaultsData.stringArray(forKey: "ToDoArray") ?? [String]()
+        toDoNotesArray = defaultsData.stringArray(forKey: "ToDoNotesArray") ?? [String]()
+    }
+    
+    func saveDefaultsData () {
+        defaultsData.set(toDoArray, forKey: "toDoArray")
+        defaultsData.set(toDoNotesArray, forKey: "toDoNotesArray")
     }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "EditItem" {
             let destination = segue.destination as! DetailedViewController
             let index = tableView.indexPathForSelectedRow!.row
             destination.toDoItem = toDoArray[index]
+            destination.toDoNoteItem = toDoNotesArray[index]
         } else {
             if let selectedPath = tableView.indexPathForSelectedRow {
                 tableView.deselectRow(at: selectedPath, animated: false)
@@ -33,13 +48,15 @@ class ViewController: UIViewController {
         let sourceViewController = segue.source as! DetailedViewController
         if let indexPath = tableView.indexPathForSelectedRow {
             toDoArray[indexPath.row] = sourceViewController.toDoItem!
+            toDoNotesArray[indexPath.row] = sourceViewController.toDoNoteItem!
             tableView.reloadRows(at: [indexPath], with: .automatic)
         } else {
             let newIndexPath = IndexPath(row: toDoArray.count, section: 0)
+                toDoNotesArray.append(sourceViewController.toDoNoteItem!)
             toDoArray.append(sourceViewController.toDoItem)
             tableView.insertRows(at: [newIndexPath], with: .automatic)
         }
-        
+        saveDefaultsData()
     }
     
     @IBAction func editBarButtonPressed(_ sender: UIBarButtonItem) {
@@ -59,24 +76,29 @@ class ViewController: UIViewController {
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        return toDoArray.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.textLabel?.text = toDoArray[indexPath.row]
+        cell.detailTextLabel?.text = toDoNotesArray[indexPath.row]
         return cell 
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete{
             toDoArray.remove(at: indexPath.row)
+            toDoNotesArray.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
-            
+            saveDefaultsData() 
         }
     }
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         let itemToMove = toDoArray[sourceIndexPath.row]
+        let noteToMove = toDoNotesArray[sourceIndexPath.row]
         toDoArray.insert(itemToMove, at: destinationIndexPath.row )
+        toDoNotesArray.insert(noteToMove, at: destinationIndexPath.row)
     }
 }
+
